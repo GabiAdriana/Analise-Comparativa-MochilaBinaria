@@ -8,7 +8,7 @@
 volatile int lixo;
 
 typedef struct
-{
+{ 
     int peso;
     int utilidade;
 } Item;
@@ -30,6 +30,13 @@ void gerarItens(Item itens[], int n)
     {
         itens[i].peso = rand() % 50 + 1;
         itens[i].utilidade = rand() % 100 + 1;
+    }
+    printf("Itens gerados:\n");
+    for (int i = 0; i < n; i++) 
+    {
+        printf("(%d,%d) ",
+               itens[i].peso,
+               itens[i].utilidade);
     }
 }
 
