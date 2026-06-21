@@ -77,32 +77,25 @@ int mochilaExata(Item itens[], int n, int capacidade)
    PROGRAMAÇÃO DINÂMICA
    ===================================================== */
 
-int mochilaPD(Item itens[], int n, int capacidade)
+int mochilaPD(Item itens[], int n, int capacidade, int vetorItensEscolhidos[])
 {
+    // 1. Alocação da matriz DP
     int **dp = (int **)malloc((n + 1) * sizeof(int *));
-
     for (int i = 0; i <= n; i++)
     {
         dp[i] = (int *)calloc(capacidade + 1, sizeof(int));
     }
 
+    // 2. Preenchimento da matriz
     for (int i = 1; i <= n; i++)
     {
         for (int w = 0; w <= capacidade; w++)
         {
             if (itens[i - 1].peso <= w)
             {
-                int incluir =
-                    itens[i - 1].utilidade +
-                    dp[i - 1][w - itens[i - 1].peso];
-
-                int excluir =
-                    dp[i - 1][w];
-
-                dp[i][w] =
-                    (incluir > excluir)
-                        ? incluir
-                        : excluir;
+                int incluir = itens[i - 1].utilidade + dp[i - 1][w - itens[i - 1].peso];
+                int excluir = dp[i - 1][w];
+                dp[i][w] = (incluir > excluir) ? incluir : excluir;
             }
             else
             {
@@ -113,11 +106,33 @@ int mochilaPD(Item itens[], int n, int capacidade)
 
     int resposta = dp[n][capacidade];
 
+    // =====================================================
+    // RECUPERAÇÃO DOS ITENS (BACKTRACKING)
+    // =====================================================
+    int w = capacidade;
+    
+    // Se passamos um vetor válido, salvamos o caminho nele
+    if (vetorItensEscolhidos != NULL)
+    {
+        for (int i = n; i > 0; i--)
+        {
+            if (dp[i][w] != dp[i - 1][w])
+            {
+                vetorItensEscolhidos[i - 1] = 1; // Item i-1 foi escolhido
+                w -= itens[i - 1].peso;
+            }
+            else
+            {
+                vetorItensEscolhidos[i - 1] = 0; // Item i-1 ficou de fora
+            }
+        }
+    }
+
+    // 3. Liberação de memória da tabela
     for (int i = 0; i <= n; i++)
     {
         free(dp[i]);
     }
-
     free(dp);
 
     return resposta;
@@ -289,18 +304,35 @@ int main()
            PROGRAMAÇÃO DINÂMICA
            ================================== */
 
-        int valorPD =
-            mochilaPD(itens,
-                      n,
-                      capacidade);
+        // Criamos um vetor para guardar quais itens foram escolhidos nesta instância
+        int *itensEscolhidos = (int *)calloc(n, sizeof(int));
 
+        // Chamada única para auditoria e recuperação dos itens
+        int valorPD = mochilaPD(itens, n, capacidade, itensEscolhidos);
+
+        // Imprime os itens selecionados APENAS UMA VEZ por tamanho de N
+        printf("Itens escolhidos na PD (ID, Peso, Utilidade): ");
+        for (int i = 0; i < n; i++)
+        {
+            if (itensEscolhidos[i] == 1)
+            {
+                printf("[%d: P=%d, U=%d] ", i, itens[i].peso, itens[i].utilidade);
+            }
+        }
+        printf("\n");
+
+        // Liberamos o vetor auxiliar após o uso
+        free(itensEscolhidos);
+
+        // Medição de tempo: rodando em silêncio passando NULL no vetor
         inicio = clock();
 
         for (int r = 0; r < REPETICOES; r++)
         {
             lixo = mochilaPD(itens,
                              n,
-                             capacidade);
+                             capacidade,
+                             NULL);
         }
 
         fim = clock();
