@@ -8,7 +8,7 @@
 volatile int lixo;
 
 typedef struct
-{
+{ 
     int peso;
     int utilidade;
 } Item;
@@ -30,6 +30,13 @@ void gerarItens(Item itens[], int n)
     {
         itens[i].peso = rand() % 50 + 1;
         itens[i].utilidade = rand() % 100 + 1;
+    }
+    printf("Itens gerados:\n");
+    for (int i = 0; i < n; i++) 
+    {
+        printf("(%d,%d) ",
+               itens[i].peso,
+               itens[i].utilidade);
     }
 }
 
@@ -134,7 +141,7 @@ int compararRazao(const void *a, const void *b)
     return 0;
 }
 
-int mochilaGulosa(Item itens[], int n, int capacidade)
+int mochilaAprox12(Item itens[], int n, int capacidade)
 {
     ItemG *v = (ItemG *)malloc(n * sizeof(ItemG));
 
@@ -150,20 +157,33 @@ int mochilaGulosa(Item itens[], int n, int capacidade)
     qsort(v, n, sizeof(ItemG), compararRazao);
 
     int pesoAtual = 0;
-    int valor = 0;
+    int valorGuloso = 0;
 
     for (int i = 0; i < n; i++)
     {
         if (pesoAtual + v[i].peso <= capacidade)
         {
             pesoAtual += v[i].peso;
-            valor += v[i].utilidade;
+            valorGuloso += v[i].utilidade;
+        }
+    }
+
+    int melhorItem = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (itens[i].peso <= capacidade &&
+            itens[i].utilidade > melhorItem)
+        {
+            melhorItem = itens[i].utilidade;
         }
     }
 
     free(v);
 
-    return valor;
+    return (valorGuloso > melhorItem)
+           ? valorGuloso
+           : melhorItem;
 }
 
 /* =====================================================
@@ -304,7 +324,7 @@ int main()
            ================================== */
 
         int valorGulosa =
-            mochilaGulosa(itens,
+            mochilaAprox12(itens,
                           n,
                           capacidade);
 
@@ -312,7 +332,7 @@ int main()
 
         for (int r = 0; r < REPETICOES; r++)
         {
-            lixo = mochilaGulosa(itens,
+            lixo = mochilaAprox12(itens,
                                  n,
                                  capacidade);
         }
